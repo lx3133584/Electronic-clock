@@ -2,17 +2,19 @@
 #define	uint	unsigned	int
 #define	uchar	unsigned	char
 
+//定义接口
 sbit	beep=P1^7;
 sbit	select=P1^0;
-sbit	jia=P1^1;
-sbit	jian=P1^2;
+sbit	add=P1^1;
+sbit	sub=P1^2;
 sbit	xuanshi=P1^3;
 
+//定义变量
 bit		flag=1,leap=0;
 char	sec_l=0,sec_r=0,min_l=0,min_r=0,hour_l=0,hour_r=0;
 char	year_l=0,year_r=0,month_l=0,month_r=0,day_l=0,day_r=0; 
 uint	num=0,sec=0,min=0,hour=0;
-uint	day=6,month=12,year=15;
+uint	day=25,month=2,year=17;
 char	count=0;
 uchar	code	table[]={0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xf8,0x80,0x90};
 
@@ -115,32 +117,32 @@ void	control(void)
 			while(1)
 			{
 				display();
-				if(jia==0)
+				if(add==0)
 				{
 					delayms(10);
 					EA=1;
-					if(jia==0)
+					if(add==0)
 					{
 						sec=0;
 						min++;
 						display();
-						while(!jia)
+						while(!add)
 						{
 							if(min==60)
 								min=0;
 						}
 					}
 				}
-				if(jian==0)
+				if(sub==0)
 				{
 					delayms(10);
 					EA=1;
-					if(jian==0)
+					if(sub==0)
 					{
 						sec=0;
 						min--;
 						display();
-						while(!jian)
+						while(!sub)
 						{
 							if(min==-1)
 								min=59;
@@ -156,31 +158,31 @@ void	control(void)
 				while(1)
 				{
 					display();
-					if(jia==0)
+					if(add==0)
 					{
 						delayms(10);
 						EA=1;
-						if(jia==0)
+						if(add==0)
 						{
 							sec=0;
 							hour++;
 							display();
-							while(!jia)
+							while(!add)
 							{
 								if(hour==24)
 									hour=0;
 							}
 						}
 			    	}
-					if(jian==0)
+					if(sub==0)
 					{
 						delayms(10);
 						EA=1;
-						if(jian==0)
+						if(sub==0)
 						{
 							sec=0;
 							hour--;
-							while(!jian)
+							while(!sub)
 							{
 								if(hour==-1)
 									hour=23;
@@ -205,7 +207,7 @@ void	baoshi()
 		beep=1;
 }
 
-void	naozhong()
+void	alarm_clock()
 {
 	if(hour==0&&min==2&&sec<15)	
 	{
@@ -334,6 +336,6 @@ void	main()
 		display();
 		control();
 		baoshi();
-		naozhong();
+		alarm_clock();
 	}
 }
