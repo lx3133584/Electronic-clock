@@ -2,21 +2,21 @@
 #define	uint	unsigned	int
 #define	uchar	unsigned	char
 
-sbit	beep=P1^7;	//������λ����
-sbit	xuanze=P1^0;
-sbit	jia=P1^1;  //ʱ����һ��
-sbit	jian=P1^2;	//ʱ����һ�� 
+sbit	beep=P1^7;
+sbit	select=P1^0;
+sbit	jia=P1^1;
+sbit	jian=P1^2;
 sbit	xuanshi=P1^3;
 
-bit	flag=1,leap=0;	//flag�ǿ���ʱ�����������յ���ʾ��leap�ж��Ƿ�λ����
-char	secshi=0,secge=0,minshi=0,minge=0,hourshi=0,hourge=0;    //����ʱ�����ĸ�λ��ʮλ
-char	yearshi=0,yearge=0,monthshi=0,monthge=0,dayshi=0,dayge=0; //���������յĸ���ʮλ
+bit		flag=1,leap=0;
+char	sec_l=0,sec_r=0,min_l=0,min_r=0,hour_l=0,hour_r=0;
+char	year_l=0,year_r=0,month_l=0,month_r=0,day_l=0,day_r=0; 
 uint	num=0,sec=0,min=0,hour=0;
 uint	day=6,month=12,year=15;
-char	count=0;	//����ѡ�����Ĵ���
+char	count=0;
 uchar	code	table[]={0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xf8,0x80,0x90};
-//P0���Ƕ�ѡ��P2����λѡ
-//��ʱ����
+
+
 void	display();
 void	delayms(uchar	x)
 {
@@ -27,23 +27,23 @@ void	delayms(uchar	x)
 	}
 }
 
-//��ʱ���ж�0��
+
 void	timer_0()	interrupt	1
 {
-	TH0=0x4c; //��װ��ֵ,һ��40ms����ֵλ28673��7001��
+	TH0=0x4c; 
 	TL0=0x00;
 	num++;
 
-	if((year%4==0&&year%100!=0)||(year%400==0))   //�ж� �Ƿ�Ϊ����
-     	leap=1;		 //����
+	if((year%4==0&&year%100!=0)||(year%400==0))
+     	leap=1;		
 	  else
-	   	leap=0;		 //ƽ��
-	if(num==20)			//��ʱ�պ�Ϊ1s
+	   	leap=0;		 
+	if(num==20)			
 		{
 		 	num=0;
 			sec++;	
 		}
-	if(sec==60)		  //��Ϊ60�ּ�1
+	if(sec==60)		 
 		{
 			sec=0;
 			min++;
@@ -53,7 +53,7 @@ void	timer_0()	interrupt	1
 			min=0;
 			hour++;
 		}
-	if(hour==24)           //����24Сʱ������һ
+	if(hour==24)       
 		{
 			hour=0;
 			min=0;
@@ -63,7 +63,7 @@ void	timer_0()	interrupt	1
 	if((leap==1&&month==2&&day==30)||(leap==0&&month==2&&day==29))
 		{
 			day=1;
-			month++;   //2��28��29ʱ�����Զ���һ
+			month++;
 		}
 	if(month==1||month==3||month==5||month==7||month==8||month==10||month==12)
 		{
@@ -86,29 +86,29 @@ void	timer_0()	interrupt	1
 			year++;
 			month=1;
 		}
-	secge=sec%10;
-	secshi=sec/10;
-	minge=min%10;
-	minshi=min/10;
-	hourge=hour%10;
-	hourshi=hour/10;
+	sec_r=sec%10;
+	sec_l=sec/10;
+	min_r=min%10;
+	min_l=min/10;
+	hour_r=hour%10;
+	hour_l=hour/10;
 
-	dayge=day%10;
-	dayshi=day/10;
-	monthge=month%10;
-	monthshi=month/10;
-	yearge=year%10;
-	yearshi=year/10;
+	day_r=day%10;
+	day_l=day/10;
+	month_r=month%10;
+	month_l=month/10;
+	year_r=year%10;
+	year_l=year/10;
 }
 
-//�ⲿ�ж�0���ж�flag��������ʾ�����գ�δ������ʾʱ����
+
 void	key_flag()	interrupt	0
 {
 	flag=!flag;
 }
 void	control(void)
 {
-	if(xuanze==0)
+	if(select==0)
 	{
 			EA=0;
 			sec=0;
@@ -146,9 +146,9 @@ void	control(void)
 								min=59;
 						}
 					}
-				}  //if
-			} //while(1)
-		} //if
+				} 
+			} 
+		} 
 			if(xuanshi==0)
 			{
 				EA=0;
@@ -189,11 +189,11 @@ void	control(void)
 						}
 		
 					}
-				} //while(1)
+				} 
 
-			  }	 //if
+			  }	
  }
-void	baoshi()             //����ʱ����ʱ10s
+void	baoshi() 
 {
 	if(min==0&&sec<10)
 	{
@@ -207,7 +207,7 @@ void	baoshi()             //����ʱ����ʱ10s
 
 void	naozhong()
 {
-	if(hour==0&&min==2&&sec<15)	   //2����ʱ��15s
+	if(hour==0&&min==2&&sec<15)	
 	{
 		beep=0;
 		delayms(10);
@@ -217,95 +217,95 @@ void	naozhong()
 		beep=1;
 }
 
-//��ʾ������
+
 void display()
 {
-	if(flag==1) 			//ʱ����ʾ
+	if(flag==1) 
 	{
-		P2=0x80;			   //������ʾ
-		P0=table[secge];
+		P2=0x80;
+		P0=table[sec_r];
 		delayms(5);
 		P2=0;
 	
 	    P2=0x40;
-		P0=table[secshi];
+		P0=table[sec_l];
 		delayms(5);
 		P2=0;
 	
-	    P2=0x20;			  //��������ʾ
+	    P2=0x20;
 		P0=0xbf;
 		delayms(5);
 		P2=0;
 	
-	    P2=0x10;			  //������ʾ
-		P0=table[minge];
+	    P2=0x10;
+		P0=table[min_r];
 		delayms(5);
 		P2=0;
 	
 	    P2=0x08;
-		P0=table[minshi];
+		P0=table[min_l];
 		delayms(5);
 		P2=0;
 	
-	    P2=0x04;			 //��������ʾ
+	    P2=0x04;
 		P0=0xbf;
 		delayms(5);
 		P2=0;
 	
-		P2=0x02;			  //ʱ����ʾ
-		P0=table[hourge];
+		P2=0x02;
+		P0=table[hour_r];
 		delayms(5);
 		P2=0;
 	
 	    P2=0x01;
-		P0=table[hourshi];
+		P0=table[hour_l];
 		delayms(5);
 		P2=0;
 	}
-	else					 //��������ʾ
+	else
 		{   
-		P2=0x80;			   //����ʾ
-		P0=table[dayge];
+		P2=0x80;
+		P0=table[day_r];
 		delayms(5);
 		P2=0;
 	
 	    P2=0x40;
-		P0=table[dayshi];
+		P0=table[day_l];
 		delayms(5);
 		P2=0;
 	
-	    P2=0x20;			  //��������ʾ
+	    P2=0x20;
 		P0=0xbf;
 		delayms(5);
 		P2=0;
 	
-	    P2=0x10;			  //����ʾ
-		P0=table[monthge];
+	    P2=0x10;
+		P0=table[month_r];
 		delayms(5);
 		P2=0;
 	
 	    P2=0x08;
-		P0=table[monthshi];
+		P0=table[month_l];
 		delayms(5);
 		P2=0;
 	
-	    P2=0x04;			 //��������ʾ
+	    P2=0x04;
 		P0=0xbf;
 		delayms(5);
 		P2=0;
 	
-		P2=0x02;			  //����ʾ
-		P0=table[yearge];
+		P2=0x02;
+		P0=table[year_r];
 		delayms(5);
 		P2=0;
 	
 	    P2=0x01;
-		P0=table[yearshi];
+		P0=table[year_l];
 		delayms(5);
 		P2=0;	
 		}	
 }
-//��ʱ��0��ʼ��
+
 void timer0(void)
 {
     TMOD = 0x01;
@@ -317,7 +317,7 @@ void timer0(void)
 	PT0=0;
 }
 
-//�ⲿ�ж�0��ʼ��
+
 void Int0()
 {	
     EA=1;
