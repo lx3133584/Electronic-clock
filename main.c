@@ -1,341 +1,204 @@
-#include<reg52.h>
-#define	uint	unsigned	int
-#define	uchar	unsigned	char
+#include <REG51.H>	
+unsigned char code LEDDATA[]={0xc0,0xf9,0xa4,0xb0,0x99,0x92,
+0x82,0xf8,0x80,0x90,0xff,0x8e,0x86};
+//数码管显示的代码表，后三个为灭灯、"F"、"E"
+unsigned char code LEDBITDATA[]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f,}; 
+//数码管扫描代码表
+unsigned char LEDBuffer[6];			//定义显示缓冲区数组
+unsigned char Second;					//秒单元
+unsigned char Minute; 				//分单元
+unsigned char Hour;					//时单元
+unsigned char Beepflag;	 			//定时响铃标志
+unsigned char Minuterom;	 			//定时分单元
+unsigned char Hourrom; 				//定时时单元
+unsigned char SETFlag=0;				//模式标志
+unsigned char second_tick;	 			//闪动标志
+unsigned char Time;					//超时计数
+unsigned char ALMFlag=0;				//定时开启标志
+sbit SET_KEY=P3^3;			 	 	//模式键
+sbit DOWN_KEY=P3^4;				//加计数键
+sbit UP_KEY=P3^5;					//减计数键
+sbit ALM_KEY=P3^2;					//显示定时时间按键
+sbit Beep=P1^7;						//蜂鸣器接口引脚
 
-//定义接口
-sbit	beep=P1^7;
-sbit	select=P1^0;
-sbit	add=P1^1;
-sbit	sub=P1^2;
-sbit	xuanshi=P1^3;
 
-//定义变量
-bit		flag=1,leap=0;
-char	sec_l=0,sec_r=0,min_l=0,min_r=0,hour_l=0,hour_r=0;
-char	year_l=0,year_r=0,month_l=0,month_r=0,day_l=0,day_r=0; 
-uint	num=0,sec=0,min=0,hour=0;
-uint	day=25,month=2,year=17;
-char	count=0;
-uchar	code	table[]={0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xf8,0x80,0x90};
+void init()
+{ 	TMOD=0x01;						//T0初始化方式1,定时
+	TH0=(65536-2000)/256;				//TH0,TL0装入定时2mS的初值
+	TL0=(65536-2000)%256;
+	TR0=1;							//启动T0工作
+	ET0=1;							//允许T0溢出中断
+	EA=1;							//CPU开中断
+}
 
-
-void	display();
-void	delayms(uchar	x)
-{
-	uchar	i;
-	while(x--)
-	{
-		for(i=0;i<113;i++);
+void Delay(unsigned int t)					//延时子程序
+{ while(t)t--;
+}
+void key()								//键盘操作子程序
+{	unsigned char i;						//缓冲数组位数标志
+	char Num;							//临时数字，存储数组合并值
+	if(SET_KEY==0)					//判断模式键是否按下
+	{	Delay(500);					//去按键抖动
+		if(SET_KEY==0)				//再判断是否真得按下了
+		{ 	SETFlag++;				//状态改变
+			if(SETFlag==7) SETFlag=0;		//返回正常模式
+			if(SETFlag==1) i=4;			//调节读取显示数组的位数
+			if(SETFlag==2) i=2;
+			if(SETFlag==3) i=0;
+			if(SETFlag==4) i=4;
+			if(SETFlag==5) i=2;
+			if(SETFlag==6) i=0;
+		}
+	while(SET_KEY==0);					//等按键释放
 	}
-}
 
-
-void	timer_0()	interrupt	1
-{
-	TH0=0x4c; 
-	TL0=0x00;
-	num++;
-
-	if((year%4==0&&year%100!=0)||(year%400==0))
-     	leap=1;		
-	  else
-	   	leap=0;		 
-	if(num==20)			
-		{
-		 	num=0;
-			sec++;	
-		}
-	if(sec==60)		 
-		{
-			sec=0;
-			min++;
-		}
-	if(min==60)
-		{
-			min=0;
-			hour++;
-		}
-	if(hour==24)       
-		{
-			hour=0;
-			min=0;
-			sec=0;
-			day++;
-		}
-	if((leap==1&&month==2&&day==30)||(leap==0&&month==2&&day==29))
-		{
-			day=1;
-			month++;
-		}
-	if(month==1||month==3||month==5||month==7||month==8||month==10||month==12)
-		{
-			if(day==32)
-			{
-				day=1;
-				month++;
-			}
-		}
-	if(month==4||month==6||month==9||month==11)
-		{
-			if(day==31)
-			{
-				day=1;
-				month++;
-			}
-		}
-	if(month==13)
-		{
-			year++;
-			month=1;
-		}
-	sec_r=sec%10;
-	sec_l=sec/10;
-	min_r=min%10;
-	min_l=min/10;
-	hour_r=hour%10;
-	hour_l=hour/10;
-
-	day_r=day%10;
-	day_l=day/10;
-	month_r=month%10;
-	month_l=month/10;
-	year_r=year%10;
-	year_l=year/10;
-}
-
-
-void	key_flag()	interrupt	0
-{
-	flag=!flag;
-}
-void	control(void)
-{
-	if(select==0)
+	if((UP_KEY==0)&&(SETFlag!=0))		//判断加计数键是否按下
 	{
-			EA=0;
-			sec=0;
-			while(1)
-			{
-				display();
-				if(add==0)
-				{
-					delayms(10);
-					EA=1;
-					if(add==0)
-					{
-						sec=0;
-						min++;
-						display();
-						while(!add)
-						{
-							if(min==60)
-								min=0;
-						}
+		Delay(5000);					//去按键抖动
+		if(UP_KEY==0)					//再判断是否真得按下了
+		{	Num=(LEDBuffer[i+1]+LEDBuffer[i]*10);
+			Num++;					//时单元的数值加1
+			if((Num==24)&&((SETFlag==3)||(SETFlag==5))) Num=0;	//加到24归0
+			if((Num==60)&&((SETFlag==1)||(SETFlag==2)||(SETFlag==4))) Num=0;			//加到60归0
+			switch(SETFlag)				//把修改值写回
+			{	case 0: ;break;
+				case 3: Hour=Num;break;
+				case 2: Minute=Num;break;
+				case 1: Second=Num;break;
+				case 5: Hourrom=Num;break;
+				case 4: Minuterom=Num;break;
+				case 6: ALMFlag=!ALMFlag;break;		
+			}
+		}
+	 }
+
+	if((DOWN_KEY==0)&&(SETFlag!=0))	//判断减计数键是否按下
+	{
+		Delay(5000);					//去按键抖动
+		if(DOWN_KEY==0)				//再判断是否真得按下了
+		{	Num=(LEDBuffer[i+1]+LEDBuffer[i]*10);
+			Num--;					//时单元的数值减1
+			if((Num<0)&&((SETFlag==3)||(SETFlag==5))) Num=23;	//到24归0
+			if((Num<0)&&((SETFlag==1)||(SETFlag==2)||(SETFlag==4))) Num=59;			//到60归0
+			switch(SETFlag)				//把修改值写回
+			{	case 0: ;break;
+				case 3: Hour=Num;break;
+				case 2: Minute=Num;break;
+				case 1: Second=Num;break;
+				case 5: Hourrom=Num;break;
+				case 4: Minuterom=Num;break;
+				case 6: ALMFlag=!ALMFlag;break;		
+			}
+		}
+	}
+	if(ALM_KEY==0)
+	{		SETFlag=0;				//状态返回
+			if(ALMFlag==0)LEDBuffer[0]=11;	//根据闹铃状态显示F或者E
+			else LEDBuffer[0]=12;		//将时,分,秒单元内容送入暂存区
+			LEDBuffer[1]=10;			//关闭该数码管显示
+			LEDBuffer[5]=Minuterom%10;
+			LEDBuffer[4]=Minuterom/10;
+			LEDBuffer[3]=Hourrom%10;
+			LEDBuffer[2]=Hourrom/10;
+			if(ALMFlag==1)
+			{	Beep=1;
+				Beepflag=0;
+			}
+	}
+}			 
+
+
+void display(void)							//显示暂存区内容对应的代码显示
+{ 	unsigned char LEDScanCount,i;				//位选扫描计数器
+P0=0xff;								//适应仿真需要
+if((UP_KEY==0)||(DOWN_KEY==0)) i=0x00;	//加减键有操作放弃闪烁
+ 	else i = 0xff*second_tick;					//设定闪烁变量
+P2= LEDBITDATA[LEDScanCount];			//送出位选数据
+switch(SETFlag)
+	{	case 0:	P0=LEDDATA[LEDBuffer[LEDScanCount]];break; 	//送出段选数据 
+	 	case 1:	if(LEDScanCount>=4)							//判断出最高两位
+					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];	//使小时闪烁
+				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;	//低位正常显示
+	 	case 2:	if((LEDScanCount==2)||(LEDScanCount==3))	 	//判断出中间位
+					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];	//使分钟闪烁
+				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;	//其他位正常显示
+		case 3:	if(LEDScanCount<=1)
+					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];
+				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;
+		case 4:	if(LEDScanCount>=4)
+					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];
+				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;
+	 	case 5:	if((LEDScanCount==2)||(LEDScanCount==3))
+					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];
+				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;
+		case 6:	if(LEDScanCount<=1)
+					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];
+				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;
+	}
+LEDScanCount++; 					//扫描指针加计数
+if(LEDScanCount==6)LEDScanCount=0 ;	//扫描完从头开始;
+}
+
+
+void timer0_isr(void) interrupt 1
+{ 	unsigned int SecondCount;
+	unsigned int timercp;					//秒计数器
+	TH0=(65536-2000)/256;				//TH0,TL0装入定时2mS的初值
+	TL0=(65536-2000)%256;	 
+	display();							//调用显示函数
+	timercp++;		
+	if(SETFlag!=0) 						//10秒不操作自动返回
+		{	if((SET_KEY==0)||(UP_KEY==0)||(DOWN_KEY==0)) Time=0;	//任意键有操作放弃计时
+		 	if (Time>=10){SETFlag=0;Time=0;}
+		}
+	if (timercp == 250)				
+		{	timercp= 0; 
+			second_tick = !second_tick;			//设定0.5秒闪动一次 
+			SecondCount++;
+			if(SecondCount==2) 				//1秒的时间
+			{	SecondCount=0;				//计数器清零
+				Time++;					
+	 			Second++;					//时间的秒加1
+				if(Second==60)
+				{	Second=0;		 		//秒清零
+					Minute++;		 		//分进一
+					if(Minute==60)
+					{	Minute=0;
+						Hour++;
+						if(Hour==24)Hour=0;	//小时清零
 					}
 				}
-				if(sub==0)
-				{
-					delayms(10);
-					EA=1;
-					if(sub==0)
-					{
-						sec=0;
-						min--;
-						display();
-						while(!sub)
-						{
-							if(min==-1)
-								min=59;
-						}
-					}
-				} 
-			} 
-		} 
-			if(xuanshi==0)
-			{
-				EA=0;
-				sec=0;
-				while(1)
-				{
-					display();
-					if(add==0)
-					{
-						delayms(10);
-						EA=1;
-						if(add==0)
-						{
-							sec=0;
-							hour++;
-							display();
-							while(!add)
-							{
-								if(hour==24)
-									hour=0;
-							}
-						}
-			    	}
-					if(sub==0)
-					{
-						delayms(10);
-						EA=1;
-						if(sub==0)
-						{
-							sec=0;
-							hour--;
-							while(!sub)
-							{
-								if(hour==-1)
-									hour=23;
-							}
-							display();
-						}
-		
-					}
-				} 
-
-			  }	
- }
-void	baoshi() 
-{
-	if(min==0&&sec<10)
-	{
-		beep=0;
-		delayms(10);
-		beep=1;
-	}
-	else
-		beep=1;
+			}
+	if(SETFlag<=3)				 	//状态模式小于3是加载时钟时间
+			{ 	LEDBuffer[5]=Second%10; 
+				LEDBuffer[4]=Second/10;
+				LEDBuffer[3]=Minute%10;
+				LEDBuffer[2]=Minute/10;
+				LEDBuffer[1]=Hour%10;
+				LEDBuffer[0]=Hour/10;
+			}
+			else							 //调整闹钟时间时加载闹钟时间
+			{	if(ALMFlag==0)LEDBuffer[0]=11; //显示闹钟激活状态
+		 		else LEDBuffer[0]=12;
+				LEDBuffer[1]=10;			 //关闭倒数第二位
+				LEDBuffer[5]=Minuterom%10;
+				LEDBuffer[4]=Minuterom/10;
+				LEDBuffer[3]=Hourrom%10;
+				LEDBuffer[2]=Hourrom/10;
+			}
 }
-
-void	alarm_clock()
-{
-	if(hour==0&&min==2&&sec<15)	
-	{
-		beep=0;
-		delayms(10);
-		beep=1;
-	}
-	else
-		beep=1;
 }
 
 
-void display()
-{
-	if(flag==1) 
-	{
-		P2=0x80;
-		P0=table[sec_r];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x40;
-		P0=table[sec_l];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x20;
-		P0=0xbf;
-		delayms(5);
-		P2=0;
-	
-	    P2=0x10;
-		P0=table[min_r];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x08;
-		P0=table[min_l];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x04;
-		P0=0xbf;
-		delayms(5);
-		P2=0;
-	
-		P2=0x02;
-		P0=table[hour_r];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x01;
-		P0=table[hour_l];
-		delayms(5);
-		P2=0;
-	}
-	else
-		{   
-		P2=0x80;
-		P0=table[day_r];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x40;
-		P0=table[day_l];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x20;
-		P0=0xbf;
-		delayms(5);
-		P2=0;
-	
-	    P2=0x10;
-		P0=table[month_r];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x08;
-		P0=table[month_l];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x04;
-		P0=0xbf;
-		delayms(5);
-		P2=0;
-	
-		P2=0x02;
-		P0=table[year_r];
-		delayms(5);
-		P2=0;
-	
-	    P2=0x01;
-		P0=table[year_l];
-		delayms(5);
-		P2=0;	
-		}	
-}
 
-void timer0(void)
-{
-    TMOD = 0x01;
-    TH0 = 0x4C;
-    TL0 = 0x00;
-    EA = 1;
-    ET0 = 1;
-    TR0 = 1;
-	PT0=0;
-}
-
-
-void Int0()
-{	
-    EA=1;
-	EX0=1;
-	IT0=1;
-	PX0=0;
-}
-void	main()
-{
-	timer0();
-	Int0();
-	while(1)
-	{
-		display();
-		control();
-		baoshi();
-		alarm_clock();
-	}
+void main(void)
+{	init();									//初始化
+while(1)
+{	key();							//调用键盘
+		if(ALMFlag==1)
+		{	if(Minute!=Minuterom) Beepflag=1;	//定时和现在不同，关闭蜂鸣器
+			if((Hour==Hourrom)&&(Minute==Minuterom)&&(Beepflag==1)) Beep=0;
+					//时分相同并闹铃打开就响铃
+		}
+} 
 }
