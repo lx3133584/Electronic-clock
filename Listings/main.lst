@@ -1,4 +1,4 @@
-C51 COMPILER V9.55   MAIN                                                                  02/27/2017 16:41:17 PAGE 1   
+C51 COMPILER V9.55   MAIN                                                                  02/27/2017 17:34:19 PAGE 1   
 
 
 C51 COMPILER V9.55, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52   2        while(SET_KEY==0);          //等按键释放
   53   2        }
   54   1      
-C51 COMPILER V9.55   MAIN                                                                  02/27/2017 16:41:17 PAGE 2   
+C51 COMPILER V9.55   MAIN                                                                  02/27/2017 17:34:19 PAGE 2   
 
   55   1        if((UP_KEY==0)&&(SETFlag!=0))   //判断加计数键是否按下
   56   1        {
@@ -126,7 +126,7 @@ line level    source
  114   1      if((UP_KEY==0)||(DOWN_KEY==0)) i=0x00;  //加减键有操作放弃闪烁
  115   1        else i = 0xff*second_tick;          //设定闪烁变量
  116   1      P2= LEDBITDATA[LEDScanCount];     //送出位选数据
-C51 COMPILER V9.55   MAIN                                                                  02/27/2017 16:41:17 PAGE 3   
+C51 COMPILER V9.55   MAIN                                                                  02/27/2017 17:34:19 PAGE 3   
 
  117   1      switch(SETFlag)
  118   1        { case 0: P0=LEDDATA[LEDBuffer[LEDScanCount]];break;  //送出段选数据 
@@ -190,7 +190,7 @@ line level    source
  176   3              LEDBuffer[2]=Minute/10;
  177   3              LEDBuffer[1]=Hour%10;
  178   3              LEDBuffer[0]=Hour/10;
-C51 COMPILER V9.55   MAIN                                                                  02/27/2017 16:41:17 PAGE 4   
+C51 COMPILER V9.55   MAIN                                                                  02/27/2017 17:34:19 PAGE 4   
 
  179   3            }
  180   2            else               //调整闹钟时间时加载闹钟时间

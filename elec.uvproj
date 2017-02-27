@@ -12,14 +12,14 @@
       <ToolsetName>MCS-51</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>IS89C52</Device>
-          <Vendor>ISSI</Vendor>
-          <Cpu>IRAM(0 - 0xFF) IROM(0 - 0x1FFF) CLOCK(40000000)</Cpu>
+          <Device>AT89C51</Device>
+          <Vendor>Atmel</Vendor>
+          <Cpu>IRAM(0-0x7F) IROM(0-0xFFF) CLOCK(24000000)</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile>"LIB\STARTUP.A51" ("Standard 8051 Startup Code")</StartupFile>
           <FlashDriverDll></FlashDriverDll>
-          <DeviceId>3053</DeviceId>
-          <RegisterFile>REG52.H</RegisterFile>
+          <DeviceId>2976</DeviceId>
+          <RegisterFile>REGX51.H</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -35,8 +35,8 @@
           <BinPath></BinPath>
           <IncludePath></IncludePath>
           <LibPath></LibPath>
-          <RegisterFilePath></RegisterFilePath>
-          <DBRegisterFilePath></DBRegisterFilePath>
+          <RegisterFilePath>Atmel\</RegisterFilePath>
+          <DBRegisterFilePath>Atmel\</DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -109,11 +109,11 @@
           <SimDllName>S8051.DLL</SimDllName>
           <SimDllArguments></SimDllArguments>
           <SimDlgDll>DP51.DLL</SimDlgDll>
-          <SimDlgDllArguments>-p52</SimDlgDllArguments>
+          <SimDlgDllArguments>-p51</SimDlgDllArguments>
           <TargetDllName>S8051.DLL</TargetDllName>
           <TargetDllArguments></TargetDllArguments>
           <TargetDlgDll>TP51.DLL</TargetDlgDll>
-          <TargetDlgDllArguments>-p52</TargetDlgDllArguments>
+          <TargetDlgDllArguments>-p51</TargetDlgDllArguments>
         </DllOption>
         <DebugOption>
           <OPTHX>
@@ -270,12 +270,12 @@
               <IRO>
                 <Type>1</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x2000</Size>
+                <Size>0x1000</Size>
               </IRO>
               <IRA>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x100</Size>
+                <Size>0x80</Size>
               </IRA>
               <XRA>
                 <Type>0</Type>
