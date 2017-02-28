@@ -26,9 +26,13 @@ Rebuild target 'Target 1'
 assembling STARTUP.A51...
 compiling main.c...
 linking...
-Program Size: data=30.0 xdata=0 code=1091
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?DISPLAY?MAIN
+    CALLER1: ?PR?TIME0?MAIN
+    CALLER2: ?PR?TIME1?MAIN
+Program Size: data=36.0 xdata=0 code=1371
 creating hex file from ".\Objects\elec"...
-".\Objects\elec" - 0 Error(s), 0 Warning(s).
+".\Objects\elec" - 0 Error(s), 1 Warning(s).
 </pre>
 </body>
 </html>
