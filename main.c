@@ -5,22 +5,26 @@ unsigned char code LEDDATA[]={0xc0,0xf9,0xa4,0xb0,0x99,0x92,
 unsigned char code LEDBITDATA[]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f,}; 
 //数码管扫描代码表
 unsigned char LEDBuffer[6];			//定义显示缓冲区数组
-unsigned char Second;					//秒单元
-unsigned char Minute; 				//分单元
 unsigned char Hour;					//时单元
-unsigned char Beepflag;	 			//定时响铃标志
-unsigned char Minuterom;	 			//定时分单元
+unsigned char Minute; 				//分单元
+unsigned char Second;					//秒单元
 unsigned char Hourrom; 				//定时时单元
+unsigned char Minuterom;	 			//定时分单元
+unsigned char Minutesw;        //秒表分单元
+unsigned char Secondsw;        //秒表秒单元
+unsigned char Centsw;          //秒表百分之一秒单元
+unsigned char Beepflag;	 			//定时响铃标志
 unsigned char SETFlag=0;				//模式标志
 unsigned char second_tick;	 			//闪动标志
 unsigned char Time;					//超时计数
 unsigned char ALMFlag=0;				//定时开启标志
-sbit SET_KEY=P3^3;			 	 	//模式键
-sbit DOWN_KEY=P3^4;				//加计数键
-sbit UP_KEY=P3^5;					//减计数键
+unsigned char SWFlag=0;					//秒表模式开启标志
 sbit ALM_KEY=P3^2;					//显示定时时间按键
+sbit SET_KEY=P3^3;			 	 	//闹钟模式键
+sbit UP_KEY=P3^4;					//加计数键
+sbit DOWN_KEY=P3^5;				//减计数键
+sbit SW_KEY=P3^6;					//秒表模式按键
 sbit Beep=P1^7;						//蜂鸣器接口引脚
-
 
 void init()
 { 	TMOD=0x01;						//T0初始化方式1,定时
@@ -82,11 +86,11 @@ void key()								//键盘操作子程序
 			if((Num<0)&&((SETFlag==1)||(SETFlag==2)||(SETFlag==4))) Num=59;			//到60归0
 			switch(SETFlag)				//把修改值写回
 			{	case 0: ;break;
-				case 3: Hour=Num;break;
-				case 2: Minute=Num;break;
 				case 1: Second=Num;break;
-				case 5: Hourrom=Num;break;
+				case 2: Minute=Num;break;
+				case 3: Hour=Num;break;	
 				case 4: Minuterom=Num;break;
+				case 5: Hourrom=Num;break;				
 				case 6: ALMFlag=!ALMFlag;break;		
 			}
 		}
@@ -96,14 +100,21 @@ void key()								//键盘操作子程序
 			if(ALMFlag==0)LEDBuffer[0]=11;	//根据闹铃状态显示F或者E
 			else LEDBuffer[0]=12;		//将时,分,秒单元内容送入暂存区
 			LEDBuffer[1]=10;			//关闭该数码管显示
-			LEDBuffer[5]=Minuterom%10;
-			LEDBuffer[4]=Minuterom/10;
-			LEDBuffer[3]=Hourrom%10;
 			LEDBuffer[2]=Hourrom/10;
+			LEDBuffer[3]=Hourrom%10;
+			LEDBuffer[4]=Minuterom/10;
+			LEDBuffer[5]=Minuterom%10;
+		
 			if(ALMFlag==1)
 			{	Beep=1;
 				Beepflag=0;
 			}
+	}
+	if(SW_KEY==0)
+	{
+		SWFlag=1;
+		
+		
 	}
 }			 
 
@@ -170,21 +181,22 @@ void timer0_isr(void) interrupt 1
 				}
 			}
 	if(SETFlag<=3)				 	//状态模式小于3是加载时钟时间
-			{ 	LEDBuffer[5]=Second%10; 
-				LEDBuffer[4]=Second/10;
-				LEDBuffer[3]=Minute%10;
-				LEDBuffer[2]=Minute/10;
+			{ LEDBuffer[0]=Hour/10;
 				LEDBuffer[1]=Hour%10;
-				LEDBuffer[0]=Hour/10;
+				LEDBuffer[2]=Minute/10;
+				LEDBuffer[3]=Minute%10;
+				LEDBuffer[4]=Second/10;
+				LEDBuffer[5]=Second%10; 
+			
 			}
 			else							 //调整闹钟时间时加载闹钟时间
 			{	if(ALMFlag==0)LEDBuffer[0]=11; //显示闹钟激活状态
 		 		else LEDBuffer[0]=12;
 				LEDBuffer[1]=10;			 //关闭倒数第二位
-				LEDBuffer[5]=Minuterom%10;
-				LEDBuffer[4]=Minuterom/10;
-				LEDBuffer[3]=Hourrom%10;
 				LEDBuffer[2]=Hourrom/10;
+				LEDBuffer[3]=Hourrom%10;
+				LEDBuffer[4]=Minuterom/10;
+				LEDBuffer[5]=Minuterom%10;		
 			}
 }
 }
@@ -194,7 +206,7 @@ void timer0_isr(void) interrupt 1
 void main(void)
 {	init();									//初始化
 while(1)
-{	key();							//调用键盘
+{		key();							//调用键盘
 		if(ALMFlag==1)
 		{	if(Minute!=Minuterom) Beepflag=1;	//定时和现在不同，关闭蜂鸣器
 			if((Hour==Hourrom)&&(Minute==Minuterom)&&(Beepflag==1)) Beep=0;
