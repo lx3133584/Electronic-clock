@@ -18,21 +18,25 @@ unsigned char SETFlag=0;				//模式标志
 unsigned char second_tick;	 			//闪动标志
 unsigned char Time;					//超时计数
 unsigned char ALMFlag=0;				//定时开启标志
-unsigned char SWFlag=0;					//秒表模式开启标志
+unsigned char SWFlag=0;					//秒表开始暂停标志
 sbit ALM_KEY=P3^2;					//显示定时时间按键
 sbit SET_KEY=P3^3;			 	 	//闹钟模式键
 sbit UP_KEY=P3^4;					//加计数键
 sbit DOWN_KEY=P3^5;				//减计数键
-sbit SW_KEY=P3^6;					//秒表模式按键
 sbit Beep=P1^7;						//蜂鸣器接口引脚
 
 void init()
-{ 	TMOD=0x01;						//T0初始化方式1,定时
+{ TMOD=0x01;						//T0初始化方式1,定时
 	TH0=(65536-2000)/256;				//TH0,TL0装入定时2mS的初值
 	TL0=(65536-2000)%256;
 	TR0=1;							//启动T0工作
 	ET0=1;							//允许T0溢出中断
-	EA=1;							//CPU开中断
+	
+	TH1=(65536-50000)/256;        
+	TL1=(65536-50000)%256; 
+	TR1=0;
+	ET1=1;
+	EA=1;								//CPU开中断
 }
 
 void Delay(unsigned int t)					//延时子程序
@@ -44,14 +48,15 @@ void key()								//键盘操作子程序
 	if(SET_KEY==0)					//判断模式键是否按下
 	{	Delay(500);					//去按键抖动
 		if(SET_KEY==0)				//再判断是否真得按下了
-		{ 	SETFlag++;				//状态改变
-			if(SETFlag==7) SETFlag=0;		//返回正常模式
+		{ SETFlag++;				//状态改变
+			if(SETFlag==8) SETFlag=0;		//返回正常模式
 			if(SETFlag==1) i=4;			//调节读取显示数组的位数
 			if(SETFlag==2) i=2;
 			if(SETFlag==3) i=0;
 			if(SETFlag==4) i=4;
 			if(SETFlag==5) i=2;
 			if(SETFlag==6) i=0;
+			if(SETFlag==7) ;
 		}
 	while(SET_KEY==0);					//等按键释放
 	}
@@ -71,7 +76,8 @@ void key()								//键盘操作子程序
 				case 1: Second=Num;break;
 				case 5: Hourrom=Num;break;
 				case 4: Minuterom=Num;break;
-				case 6: ALMFlag=!ALMFlag;break;		
+				case 6: ALMFlag=!ALMFlag;break;
+				case 7: TR1=!TR1;break;						//秒表开始与暂停
 			}
 		}
 	 }
@@ -91,7 +97,8 @@ void key()								//键盘操作子程序
 				case 3: Hour=Num;break;	
 				case 4: Minuterom=Num;break;
 				case 5: Hourrom=Num;break;				
-				case 6: ALMFlag=!ALMFlag;break;		
+				case 6: ALMFlag=!ALMFlag;break;
+				case 7: TR1=0;Minutesw=0;Secondsw=0;Centsw=0;break;		//秒表reset			
 			}
 		}
 	}
@@ -109,12 +116,6 @@ void key()								//键盘操作子程序
 			{	Beep=1;
 				Beepflag=0;
 			}
-	}
-	if(SW_KEY==0)
-	{
-		SWFlag=1;
-		
-		
 	}
 }			 
 
@@ -145,20 +146,21 @@ switch(SETFlag)
 		case 6:	if(LEDScanCount<=1)
 					 P0=i|LEDDATA[LEDBuffer[LEDScanCount]];
 				else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;
+		case 7:	P0=LEDDATA[LEDBuffer[LEDScanCount]];break; 
 	}
 LEDScanCount++; 					//扫描指针加计数
 if(LEDScanCount==6)LEDScanCount=0 ;	//扫描完从头开始;
 }
 
 
-void timer0_isr(void) interrupt 1
-{ 	unsigned int SecondCount;
+void time0() interrupt 1
+{ unsigned int SecondCount;
 	unsigned int timercp;					//秒计数器
 	TH0=(65536-2000)/256;				//TH0,TL0装入定时2mS的初值
 	TL0=(65536-2000)%256;	 
 	display();							//调用显示函数
 	timercp++;		
-	if(SETFlag!=0) 						//10秒不操作自动返回
+	if((SETFlag!=0)&&(SETFlag!=7)) 						//10秒不操作自动返回
 		{	if((SET_KEY==0)||(UP_KEY==0)||(DOWN_KEY==0)) Time=0;	//任意键有操作放弃计时
 		 	if (Time>=10){SETFlag=0;Time=0;}
 		}
@@ -198,8 +200,43 @@ void timer0_isr(void) interrupt 1
 				LEDBuffer[4]=Minuterom/10;
 				LEDBuffer[5]=Minuterom%10;		
 			}
+	}
+	
 }
+void time1() interrupt 3
+{
+	unsigned int Count;
+	TH1=(65536-50000)/256;        
+	TL1=(65536-50000)%256; 
+	display();	
+	Count++;
+	if(Count==2)
+	{
+	Count=0;
+	Centsw++;
+	if(Centsw==100)
+	{
+		Centsw=0;
+		Secondsw++;
+		if(Secondsw==60)
+		{
+			Secondsw=0;
+			Minutesw++
+			if(Minutesw==60)
+			{
+				Minutesw=0;
+			}
+		}
+	}
+	}
+	LEDBuffer[0]=Minutesw/10;
+	LEDBuffer[1]=Minutesw%10;
+	LEDBuffer[2]=Secondsw/10;
+	LEDBuffer[3]=Secondsw%10;
+	LEDBuffer[4]=Centsw/10;
+	LEDBuffer[5]=Centsw%10;
 }
+	
 
 
 
