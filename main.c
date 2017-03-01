@@ -237,6 +237,7 @@ void time1() interrupt 3      //秒表中断程序
 			}
 		}
 	}
+	
 
 	}
 	LEDBuffer[0]=Minutesw/10;

@@ -1,4 +1,4 @@
-C51 COMPILER V9.55   MAIN                                                                  02/28/2017 18:52:30 PAGE 1   
+C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 1   
 
 
 C51 COMPILER V9.55, COMPILATION OF MODULE MAIN
@@ -17,27 +17,27 @@ line level    source
    7          unsigned char LEDBuffer[6];     //定义显示缓冲区数组
    8          unsigned char Hour;         //时单元
    9          unsigned char Minute;         //分单元
-  10          unsigned char Second;         //秒单元
+  10          unsigned char Second;       //秒单元
   11          unsigned char Hourrom;        //定时时单元
-  12          unsigned char Minuterom;        //定时分单元
-  13          unsigned char Minutesw;        //秒表分单元
-  14          unsigned char Secondsw;        //秒表秒单元
-  15          unsigned char Centsw;          //秒表百分之一秒单元
+  12          unsigned char Minuterom;      //定时分单元
+  13          unsigned char Minutesw;           //秒表分单元
+  14          unsigned char Secondsw;           //秒表秒单元
+  15          unsigned char Centsw;             //秒表百分之一秒单元
   16          unsigned char Beepflag;       //定时响铃标志
-  17          unsigned char SETFlag=0;        //模式标志
-  18          unsigned char second_tick;        //闪动标志
+  17          unsigned char SETFlag=0;      //模式标志
+  18          unsigned char second_tick;      //闪动标志
   19          unsigned char Time;         //超时计数
-  20          unsigned char ALMFlag=0;        //定时开启标志
+  20          unsigned char ALMFlag=0;      //定时开启标志
   21          
   22          sbit ALM_KEY=P3^2;          //显示定时时间按键
   23          sbit SET_KEY=P3^3;          //闹钟模式键
   24          sbit UP_KEY=P3^4;         //加计数键
-  25          sbit DOWN_KEY=P3^5;       //减计数键
+  25          sbit DOWN_KEY=P3^5;         //减计数键
   26          sbit Beep=P1^7;           //蜂鸣器接口引脚
   27          
   28          void init()
-  29          { TMOD=0x01;            //T0初始化方式1,定时
-  30   1        TH0=(65536-2000)/256;       //TH0,TL0装入定时2mS的初值
+  29          {   TMOD=0x01;            //T0初始化方式1,定时
+  30   1        TH0=(65536-2000)/256;     //TH0,TL0装入定时2mS的初值
   31   1        TL0=(65536-2000)%256;
   32   1        TR0=1;              //启动T0工作
   33   1        ET0=1;              //允许T0溢出中断
@@ -46,23 +46,23 @@ line level    source
   36   1        TL1=(65536-50000)%256; 
   37   1        TR1=0;
   38   1        ET1=1;
-  39   1        EA=1;               //CPU开中断
+  39   1        EA=1;             //CPU开中断
   40   1      }
   41          
-  42          void Delay(unsigned int t)          //延时子程序
+  42          void Delay(unsigned int t)      //延时子程序
   43          { while(t)t--;
   44   1      }
-  45          void key()                //键盘操作子程序
-  46          { unsigned char i;            //缓冲数组位数标志
-  47   1        char Num;             //临时数字，存储数组合并值
+  45          void key()              //键盘操作子程序
+  46          { unsigned char i;        //缓冲数组位数标志
+  47   1        char Num;           //临时数字，存储数组合并值
   48   1        if(SET_KEY==0)          //判断模式键是否按下
   49   1        { Delay(500);         //去按键抖动
   50   2          if(SET_KEY==0)        //再判断是否真得按下了
-  51   2          { SETFlag++;        //状态改变
-  52   3            if(SETFlag==8) SETFlag=0;   //返回正常模式
+  51   2          {   SETFlag++;        //状态改变
+  52   3            if(SETFlag==8) SETFlag=0; //返回正常模式
   53   3            if(SETFlag==1) i=4;     //调节读取显示数组的位数
   54   3            if(SETFlag==2) i=2;
-C51 COMPILER V9.55   MAIN                                                                  02/28/2017 18:52:30 PAGE 2   
+C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 2   
 
   55   3            if(SETFlag==3) i=0;
   56   3            if(SETFlag==4) i=4;
@@ -78,7 +78,7 @@ line level    source
   66   2          Delay(5000);          //去按键抖动
   67   2          if(UP_KEY==0)         //再判断是否真得按下了
   68   2          { Num=(LEDBuffer[i+1]+LEDBuffer[i]*10);
-  69   3            Num++;          //时单元的数值加1
+  69   3            Num++;            //时单元的数值加1
   70   3            if((Num==24)&&((SETFlag==3)||(SETFlag==5))) Num=0;  //加到24归0
   71   3            if((Num==60)&&((SETFlag==1)||(SETFlag==2)||(SETFlag==4))) Num=0;      //加到60归0
   72   3            switch(SETFlag)       //把修改值写回
@@ -96,7 +96,7 @@ line level    source
   84   1      
   85   1        if((DOWN_KEY==0)&&(SETFlag!=0)) //判断减计数键是否按下
   86   1        {
-  87   2          Delay(5000);          //去按键抖动
+  87   2          Delay(5000);        //去按键抖动
   88   2          if(DOWN_KEY==0)       //再判断是否真得按下了
   89   2          { Num=(LEDBuffer[i+1]+LEDBuffer[i]*10);
   90   3            Num--;          //时单元的数值减1
@@ -115,30 +115,30 @@ line level    source
  103   3          }
  104   2        }
  105   1        if(ALM_KEY==0)
- 106   1        {   SETFlag=0;        //状态返回
- 107   2            if(ALMFlag==0)LEDBuffer[0]=11;  //根据闹铃状态显示F或者E
- 108   2            else LEDBuffer[0]=12;   //将时,分,秒单元内容送入暂存区
- 109   2            LEDBuffer[1]=10;      //关闭该数码管显示
- 110   2            LEDBuffer[2]=Hourrom/10;
- 111   2            LEDBuffer[3]=Hourrom%10;
- 112   2            LEDBuffer[4]=Minuterom/10;
- 113   2            LEDBuffer[5]=Minuterom%10;
+ 106   1        { SETFlag=0;            //状态返回
+ 107   2          if(ALMFlag==0)LEDBuffer[0]=11;  //根据闹铃状态显示F或者E
+ 108   2          else LEDBuffer[0]=12;     //将时,分,秒单元内容送入暂存区
+ 109   2          LEDBuffer[1]=10;        //关闭该数码管显示
+ 110   2          LEDBuffer[2]=Hourrom/10;
+ 111   2          LEDBuffer[3]=Hourrom%10;
+ 112   2          LEDBuffer[4]=Minuterom/10;
+ 113   2          LEDBuffer[5]=Minuterom%10;
  114   2          
- 115   2            if(ALMFlag==1)
- 116   2            { Beep=1;
-C51 COMPILER V9.55   MAIN                                                                  02/28/2017 18:52:30 PAGE 3   
+ 115   2          if(ALMFlag==1)
+ 116   2          { Beep=1;
+C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 3   
 
- 117   3              Beepflag=0;
- 118   3            }
+ 117   3            Beepflag=0;
+ 118   3          }
  119   2        }
  120   1      }      
  121          
  122          
  123          void display()              //显示暂存区内容对应的代码显示
- 124          {   unsigned char LEDScanCount,i;       //位选扫描计数器
+ 124          {   unsigned char LEDScanCount,i;   //位选扫描计数器
  125   1      P0=0xff;                //适应仿真需要
  126   1      if((UP_KEY==0)||(DOWN_KEY==0)) i=0x00;  //加减键有操作放弃闪烁
- 127   1        else i = 0xff*second_tick;          //设定闪烁变量
+ 127   1        else i = 0xff*second_tick;      //设定闪烁变量
  128   1      P2= LEDBITDATA[LEDScanCount];     //送出位选数据
  129   1      switch(SETFlag)
  130   1        { case 0: P0=LEDDATA[LEDBuffer[LEDScanCount]];break;  //送出段选数据 
@@ -162,14 +162,14 @@ line level    source
  148   2              else P0=LEDDATA[LEDBuffer[LEDScanCount]];break;
  149   2          case 7: P0=LEDDATA[LEDBuffer[LEDScanCount]];break; 
  150   2        }
- 151   1      LEDScanCount++;           //扫描指针加计数
+ 151   1      LEDScanCount++;             //扫描指针加计数
  152   1      if(LEDScanCount==6) LEDScanCount=0 ;  //扫描完从头开始;
  153   1      }
  154          
  155          
  156          void time0() interrupt 1
- 157          { unsigned int SecondCount;
- 158   1        unsigned int timercp;         //秒计数器
+ 157          {   unsigned int SecondCount;
+ 158   1        unsigned int timercp;       //秒计数器
  159   1        TH0=(65536-2000)/256;       //TH0,TL0装入定时2mS的初值
  160   1        TL0=(65536-2000)%256;  
  161   1        display();              //调用显示函数
@@ -180,7 +180,7 @@ line level    source
  166   2          }
  167   1        if (timercp == 250)       
  168   1          { timercp= 0; 
- 169   2            second_tick = !second_tick;     //设定0.5秒闪动一次 
+ 169   2            second_tick = !second_tick;   //设定0.5秒闪动一次 
  170   2            SecondCount++;
  171   2            if(SecondCount==2)        //1秒的时间
  172   2            { SecondCount=0;        //计数器清零
@@ -190,7 +190,7 @@ line level    source
  176   3              { Second=0;       //秒清零
  177   4                Minute++;       //分进一
  178   4                if(Minute==60)
-C51 COMPILER V9.55   MAIN                                                                  02/28/2017 18:52:30 PAGE 4   
+C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 4   
 
  179   4                { Minute=0;
  180   5                  Hour++;
@@ -198,7 +198,7 @@ line level    source
  182   5                }
  183   4              }
  184   3            }
- 185   2        if(SETFlag<=3)          //状态模式小于3是加载时钟时间
+ 185   2        if(SETFlag<=3)              //状态模式小于3是加载时钟时间
  186   2            { LEDBuffer[0]=Hour/10;
  187   3              LEDBuffer[1]=Hour%10;
  188   3              LEDBuffer[2]=Minute/10;
@@ -253,33 +253,34 @@ line level    source
  237   5            }
  238   4          }
  239   3        }
- 240   2      
-C51 COMPILER V9.55   MAIN                                                                  02/28/2017 18:52:30 PAGE 5   
+ 240   2        
+C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 5   
 
- 241   2        }
- 242   1        LEDBuffer[0]=Minutesw/10;
- 243   1        LEDBuffer[1]=Minutesw%10;
- 244   1        LEDBuffer[2]=Secondsw/10;
- 245   1        LEDBuffer[3]=Secondsw%10;
- 246   1        LEDBuffer[4]=Centsw/10;
- 247   1        LEDBuffer[5]=Centsw%10;
- 248   1        
- 249   1      }
- 250            
- 251          
+ 241   2      
+ 242   2        }
+ 243   1        LEDBuffer[0]=Minutesw/10;
+ 244   1        LEDBuffer[1]=Minutesw%10;
+ 245   1        LEDBuffer[2]=Secondsw/10;
+ 246   1        LEDBuffer[3]=Secondsw%10;
+ 247   1        LEDBuffer[4]=Centsw/10;
+ 248   1        LEDBuffer[5]=Centsw%10;
+ 249   1        
+ 250   1      }
+ 251            
  252          
  253          
- 254          void main()
- 255          { init();                 //初始化
- 256   1        while(1)
- 257   1      {   key();              //调用键盘
- 258   2          if(ALMFlag==1)
- 259   2          { if(Minute!=Minuterom) Beepflag=1; //定时和现在不同，关闭蜂鸣器
- 260   3            if((Hour==Hourrom)&&(Minute==Minuterom)&&(Beepflag==1)) Beep=0;
- 261   3                //时分相同并闹铃打开就响铃
- 262   3          }
- 263   2      } 
- 264   1      }
+ 254          
+ 255          void main()
+ 256          { init();               //初始化
+ 257   1        while(1)
+ 258   1      {   key();              //调用键盘
+ 259   2          if(ALMFlag==1)
+ 260   2          { if(Minute!=Minuterom) Beepflag=1; //定时和现在不同，关闭蜂鸣器
+ 261   3            if((Hour==Hourrom)&&(Minute==Minuterom)&&(Beepflag==1)) Beep=0;
+ 262   3                //时分相同并闹铃打开就响铃
+ 263   3          }
+ 264   2      } 
+ 265   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
