@@ -46,7 +46,7 @@ void key()							//键盘操作子程序
 {	unsigned char i;				//缓冲数组位数标志
 	char Num;						//临时数字，存储数组合并值
 	if(SET_KEY==0)					//判断模式键是否按下
-	{	Delay(500);					//去按键抖动
+	{	Delay(5000);					//去按键抖动
 		if(SET_KEY==0)				//再判断是否真得按下了
 		{ 	SETFlag++;				//状态改变
 			if(SETFlag==8) SETFlag=0;	//返回正常模式

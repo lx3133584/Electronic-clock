@@ -1,4 +1,4 @@
-C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 1   
+C51 COMPILER V9.55   MAIN                                                                  03/05/2017 17:29:26 PAGE 1   
 
 
 C51 COMPILER V9.55, COMPILATION OF MODULE MAIN
@@ -56,13 +56,13 @@ line level    source
   46          { unsigned char i;        //缓冲数组位数标志
   47   1        char Num;           //临时数字，存储数组合并值
   48   1        if(SET_KEY==0)          //判断模式键是否按下
-  49   1        { Delay(500);         //去按键抖动
+  49   1        { Delay(5000);          //去按键抖动
   50   2          if(SET_KEY==0)        //再判断是否真得按下了
   51   2          {   SETFlag++;        //状态改变
   52   3            if(SETFlag==8) SETFlag=0; //返回正常模式
   53   3            if(SETFlag==1) i=4;     //调节读取显示数组的位数
   54   3            if(SETFlag==2) i=2;
-C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 2   
+C51 COMPILER V9.55   MAIN                                                                  03/05/2017 17:29:26 PAGE 2   
 
   55   3            if(SETFlag==3) i=0;
   56   3            if(SETFlag==4) i=4;
@@ -126,7 +126,7 @@ line level    source
  114   2          
  115   2          if(ALMFlag==1)
  116   2          { Beep=1;
-C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 3   
+C51 COMPILER V9.55   MAIN                                                                  03/05/2017 17:29:26 PAGE 3   
 
  117   3            Beepflag=0;
  118   3          }
@@ -190,7 +190,7 @@ line level    source
  176   3              { Second=0;       //秒清零
  177   4                Minute++;       //分进一
  178   4                if(Minute==60)
-C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 4   
+C51 COMPILER V9.55   MAIN                                                                  03/05/2017 17:29:26 PAGE 4   
 
  179   4                { Minute=0;
  180   5                  Hour++;
@@ -254,7 +254,7 @@ line level    source
  238   4          }
  239   3        }
  240   2        
-C51 COMPILER V9.55   MAIN                                                                  03/01/2017 19:05:47 PAGE 5   
+C51 COMPILER V9.55   MAIN                                                                  03/05/2017 17:29:26 PAGE 5   
 
  241   2      
  242   2        }
@@ -284,7 +284,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1194    ----
+   CODE SIZE        =   1186    ----
    CONSTANT SIZE    =     21    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
